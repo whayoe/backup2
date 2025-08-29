@@ -4,7 +4,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 logs/
-uploads/
+
 web_app.py
 backup.py
 .env
