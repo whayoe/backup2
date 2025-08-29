@@ -1,0 +1,11 @@
+# F:\DOKUMEN\BACKUP\.gitignore
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+logs/
+uploads/
+web_app.py
+backup.py
+.env
+*.log
