@@ -1,96 +1,42 @@
 <!-- F:\DOKUMEN\BACKUP\templates\index.html -->
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BackupWhayoe</title>
-  <link rel="stylesheet" href="/static/css/style.css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <title>Backup Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .btn { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 5px; cursor: pointer; }
+    .primary { background: #007bff; color: white; }
+    .secondary { background: #28a745; color: white; }
+    pre { background: #eee; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto; }
+  </style>
 </head>
 <body>
-  <div class="background"></div>
   <div class="container">
-    <header>
-      <div class="logo">
-        <i class="fas fa-vault"></i>
-        <h1>BackupWhayoe</h1>
-      </div>
-      <p>🔒 Backup otomatis ke GitHub • Aman & Terenkripsi</p>
-    </header>
+    <h1>☁️ Backup Dashboard</h1>
+    <p>Status terakhir: <strong>{{ last_run }}</strong></p>
 
-    <div class="stats-grid">
-      <div class="stat-card primary">
-        <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-        <div class="content">
-          <h3>Backup Terakhir</h3>
-          <p>{{ last_run }}</p>
-        </div>
-      </div>
-      <div class="stat-card success">
-        <div class="icon"><i class="fas fa-check-circle"></i></div>
-        <div class="content">
-          <h3>Status</h3>
-          <p class="success-text">✅ {{ status }}</p>
-        </div>
-      </div>
-      <div class="stat-card info">
-        <div class="icon"><i class="fas fa-file-alt"></i></div>
-        <div class="content">
-          <h3>Total File</h3>
-          <p>{{ file_count }} file</p>
-        </div>
-      </div>
-      <div class="stat-card warning">
-        <div class="icon"><i class="fas fa-history"></i></div>
-        <div class="content">
-          <h3>Ukuran Backup</h3>
-          <p id="backup-size">...</p>
-        </div>
-      </div>
-    </div>
+    <button onclick="runBackup()" class="btn primary">🚀 Jalankan Backup</button>
+    <form id="upload-form" enctype="multipart/form-data" style="display:inline;">
+      <label class="btn secondary">📤 Pilih File
+        <input type="file" name="file" id="file-input" required style="display:none;">
+      </label>
+      <button type="submit" class="btn secondary">Upload</button>
+    </form>
 
-    <div class="actions">
-      <button onclick="runBackup()" class="btn-primary">
-        <i class="fas fa-play"></i> Jalankan Backup
-      </button>
-      <form id="upload-form" enctype="multipart/form-data" class="upload-group">
-        <label class="btn-secondary">
-          <i class="fas fa-upload"></i> Pilih File
-          <input type="file" name="file" id="file-input" required>
-        </label>
-        <button type="submit" class="btn-upload">Upload & Backup</button>
-      </form>
-    </div>
-
-    <div class="log-section">
-      <div class="log-header">
-        <h3><i class="fas fa-terminal"></i> Terminal Log</h3>
-        <a href="/download-log" class="btn-small">
-          <i class="fas fa-download"></i> Simpan Log
-        </a>
-      </div>
-      <pre id="log-output">{{ log }}</pre>
-    </div>
-  </div>
-
-  <div id="toast" class="toast hidden">
-    <i class="fas fa-check-circle"></i>
-    <span id="toast-message">Backup berhasil!</span>
+    <h3>📋 Log Aktivitas</h3>
+    <pre>{{ log }}</pre>
   </div>
 
   <script>
-    setTimeout(() => location.reload(), 60000);
-
     function runBackup() {
       fetch('/run-backup')
         .then(res => res.text())
         .then(html => {
           document.body.insertAdjacentHTML('beforeend', `<div style="display:none">${html}</div>`);
         })
-        .catch(err => {
-          alert('❌ Error: Tidak bisa hubungi server');
-        });
+        .catch(err => alert('❌ Error: Tidak bisa hubungi server'));
     }
 
     document.getElementById('upload-form').onsubmit = async (e) => {
@@ -100,15 +46,12 @@
       formData.append('file', file);
       const res = await fetch('/upload', { method: 'POST', body: formData });
       if (res.ok) {
-        alert(`✅ ${file.name} berhasil diupload dan di-backup!`);
+        alert(`✅ ${file.name} berhasil diupload!`);
         location.reload();
       } else {
-        alert('❌ Gagal upload file.');
+        alert('❌ Gagal upload.');
       }
     };
-
-    const files = {{ file_count }};
-    document.getElementById('backup-size').textContent = `${(files * 0.5).toFixed(1)} MB`;
   </script>
 </body>
 </html>
