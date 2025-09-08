@@ -80,35 +80,60 @@
   </div>
 
   <script>
-    setTimeout(() => location.reload(), 60000);
+  // Auto-refresh tiap 60 detik
+  setTimeout(() => location.reload(), 60000);
 
-    function runBackup() {
-      fetch('/run-backup')
-        .then(res => res.text())
-        .then(html => {
-          document.body.insertAdjacentHTML('beforeend', `<div style="display:none">${html}</div>`);
-        })
-        .catch(err => {
-          alert('❌ Error: Tidak bisa hubungi server');
-        });
+  // Jalankan Backup
+  document.querySelector('.btn-primary').onclick = () => {
+    fetch('/run-backup')
+      .then(res => res.text())
+      .then(html => {
+        if (html.includes('Backup berhasil')) {
+          showToast('🚀 Backup selesai!');
+          setTimeout(() => location.reload(), 1500);
+        } else if (html.includes('Gagal')) {
+          showToast('❌ Gagal backup', 'error');
+        }
+      })
+      .catch(err => {
+        showToast('❌ Error koneksi', 'error');
+      });
+  };
+
+  // Upload File
+  document.getElementById('upload-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const file = document.getElementById('file-input').files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.ok) {
+      showToast(`✅ ${file.name} berhasil diupload dan di-backup!`);
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showToast('❌ Gagal upload file.', 'error');
     }
+  };
 
-    document.getElementById('upload-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const file = document.getElementById('file-input').files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/upload', { method: 'POST', body: formData });
-      if (res.ok) {
-        alert(`✅ ${file.name} berhasil diupload dan di-backup!`);
-        location.reload();
-      } else {
-        alert('❌ Gagal upload file.');
-      }
-    };
+  // Toast Notification
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = toast.querySelector('i');
+    toast.className = 'toast';
+    toast.querySelector('#toast-message').textContent = msg;
+    icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    toast.style.background = type === 'success' ? '#28a745' : '#dc3545';
+    setTimeout(() => toast.classList.add('hidden'), 3000);
+  }
 
-    const files = {{ file_count }};
-    document.getElementById('backup-size').textContent = `${(files * 0.5).toFixed(1)} MB`;
-  </script>
+  // Hitung ukuran folder (simulasi)
+  const files = {{ file_count }};
+  document.getElementById('backup-size').textContent = `${(files * 0.5).toFixed(1)} MB`;
+</script>
 </body>
 </html>
