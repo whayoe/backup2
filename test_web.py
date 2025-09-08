@@ -1,6 +1,7 @@
 from flask import Flask
 import os
 import subprocess
+import sys
 
 app = Flask(__name__)
 
@@ -8,22 +9,42 @@ app = Flask(__name__)
 def index():
     return """
     <h1>Test Server</h1>
-    <button onclick="fetch('/run-backup')">Jalankan Backup</button>
+    <button onclick="fetch('/run-backup').then(res => res.text()).then(html => alert(html))">Jalankan Backup</button>
     """
 
 @app.route('/run-backup')
 def run_backup():
     try:
+        print("🚀 Menjalankan backup.py...")
+        
+        # Jalankan backup.py
         result = subprocess.run(
-            ["python", "backup.py"],
+            [sys.executable, "backup.py"],
             cwd=r"F:\DOKUMEN\BACKUP",
             capture_output=True,
             text=True,
-            encoding="utf-8"
+            encoding="utf-8",
+            timeout=30  # Timeout 30 detik
         )
-        return f"<pre>STDOUT:\n{result.stdout}\n\nSTDERR:\n{result.stderr}</pre>"
+
+        # Log output
+        if result.stdout:
+            print(f"STDOUT: {result.stdout}")
+        if result.stderr:
+            print(f"STDERR: {result.stderr}")
+
+        if result.returncode == 0:
+            return "<pre>✅ Backup berhasil!</pre>"
+        else:
+            return f"<pre>❌ Gagal: {result.stderr}</pre>"
+
+    except subprocess.TimeoutExpired:
+        print("⏰ ERROR: Backup timeout (melebihi 30 detik)")
+        return "<pre>❌ Backup timeout! Proses terlalu lama.</pre>"
+
     except Exception as e:
-        return f"<pre>Error: {str(e)}</pre>"
+        print(f"💥 ERROR: {str(e)}")
+        return f"<pre>❌ Error: {str(e)}</pre>"
 
 if __name__ == '__main__':
     app.run(port=5000)
