@@ -24,7 +24,7 @@ def run_backup():
             capture_output=True,
             text=True,
             encoding="utf-8",
-            timeout=30  # Timeout 30 detik
+            timeout=60  # Timeout 60 detik
         )
 
         # Log output
@@ -39,7 +39,7 @@ def run_backup():
             return f"<pre>❌ Gagal: {result.stderr}</pre>"
 
     except subprocess.TimeoutExpired:
-        print("⏰ ERROR: Backup timeout (melebihi 30 detik)")
+        print("⏰ ERROR: Backup timeout (melebihi 60 detik)")
         return "<pre>❌ Backup timeout! Proses terlalu lama.</pre>"
 
     except Exception as e:
